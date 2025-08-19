@@ -1,41 +1,46 @@
+using Iris.Core;
+using Iris.WebApi.Services;
+using Serilog;
+using Serilog.Extensions.Logging;
+
 namespace Iris.WebApi;
 
 public class Program
 {
     public static void Main(string[] args)
     {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
+            .WriteTo.File("iris-webapi_.log",
+                rollingInterval: RollingInterval.Day,
+                rollOnFileSizeLimit: true,
+                fileSizeLimitBytes: 30L * 1024 * 1024)
+            .CreateLogger();
+
+        Log.Information("Iris Web API");
+
+        Log.Information("Initializing services...");
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
+        builder.Services.AddControllers();
         builder.Services.AddAuthorization();
+        builder.Services.AddSerilog(Log.Logger);
+        builder.Services.AddSingleton<ImageLoader>();
+        builder.Services.AddSingleton<PaletteService>();
+        Log.Information("Services initialized");
 
-
+        Log.Information("Configuring application...");
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
-
         app.UseHttpsRedirection();
-
         app.UseAuthorization();
+        app.MapControllers();
+        Log.Information("Application configured");
 
-        var summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
-        app.MapGet("/weatherforecast", (HttpContext httpContext) =>
-        {
-            var forecast =  Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                {
-                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    TemperatureC = Random.Shared.Next(-20, 55),
-                    Summary = summaries[Random.Shared.Next(summaries.Length)]
-                })
-                .ToArray();
-            return forecast;
-        });
-
+        Log.Information("Running application...");
         app.Run();
+        Log.Information("Exiting application...");
+        Log.CloseAndFlush();
     }
 }
