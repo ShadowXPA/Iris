@@ -14,10 +14,10 @@ public class PaletteController(ILogger<PaletteController> logger, PaletteService
     [HttpPost]
     public async Task<IActionResult> GeneratePaletteAsync([FromForm] PaletteSettings paletteSettings)
     {
-        if (string.IsNullOrWhiteSpace(paletteSettings.Uri) && paletteSettings.File is null)
-            return BadRequest("You need to specify a URI or a File...");
+        if (string.IsNullOrWhiteSpace(paletteSettings.Url) && paletteSettings.File is null)
+            return BadRequest("You need to specify an URL or a File...");
 
-        var colors = await _paletteService.GeneratePaletteAsync(paletteSettings.Colors, paletteSettings.Uri, paletteSettings.File);
+        var colors = await _paletteService.GeneratePaletteAsync(paletteSettings.Colors, paletteSettings.Url, paletteSettings.File);
 
         return Ok(colors);
     }

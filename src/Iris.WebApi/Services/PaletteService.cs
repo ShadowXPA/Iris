@@ -15,9 +15,9 @@ public class PaletteService(
     private readonly int _sampleStep = sampleStep;
     private readonly int _maxIterations = maxIterations;
 
-    public async Task<List<string>> GeneratePaletteAsync(int numColors, string? uri = null, IFormFile? file = null)
+    public async Task<List<string>> GeneratePaletteAsync(int numColors, string? url = null, IFormFile? file = null)
     {
-        var pixels = await GetImagePixelsAsync(uri, file);
+        var pixels = await GetImagePixelsAsync(url, file);
 
         if (pixels.Count == 0 || numColors > pixels.Count) return [];
 
@@ -30,17 +30,17 @@ public class PaletteService(
         return colors;
     }
 
-    private async Task<List<int[]>> GetImagePixelsAsync(string? uri = null, IFormFile? file = null)
+    private async Task<List<int[]>> GetImagePixelsAsync(string? url = null, IFormFile? file = null)
     {
         _logger.LogInformation("Getting image pixels...");
 
-        if (string.IsNullOrWhiteSpace(uri) && file is null)
+        if (string.IsNullOrWhiteSpace(url) && file is null)
         {
-            _logger.LogWarning("Both the URI and file are null... Can not get image pixels...");
+            _logger.LogWarning("Both the URL and file are null... Can not get image pixels...");
             return [];
         }
 
-        using var image = file is not null ? await _imageLoader.LoadAsync(file.OpenReadStream()) : await _imageLoader.LoadAsync(new Uri(uri!));
+        using var image = file is not null ? await _imageLoader.LoadAsync(file.OpenReadStream()) : await _imageLoader.LoadAsync(new Uri(url!));
 
         if (image is null)
         {
