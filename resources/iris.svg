@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="500"
+   height="500"
+   viewBox="0 0 500 500"
+   version="1.1"
+   id="svg1"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <linearGradient
+       id="swatch12">
+      <stop
+         style="stop-color:#ff0000;stop-opacity:1;"
+         offset="0"
+         id="stop12" />
+      <stop
+         style="stop-color:#ffa500;stop-opacity:1;"
+         offset="0.16152018"
+         id="stop15" />
+      <stop
+         style="stop-color:#ffff00;stop-opacity:1;"
+         offset="0.31999999"
+         id="stop16" />
+      <stop
+         style="stop-color:#008000;stop-opacity:1;"
+         offset="0.4976247"
+         id="stop14" />
+      <stop
+         style="stop-color:#00ffff;stop-opacity:1;"
+         offset="0.68000001"
+         id="stop13" />
+      <stop
+         style="stop-color:#0000ff;stop-opacity:1;"
+         offset="0.83999997"
+         id="stop17" />
+      <stop
+         style="stop-color:#ee82ee;stop-opacity:1;"
+         offset="1"
+         id="stop18" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#swatch12"
+       id="linearGradient28"
+       x1="18.386408"
+       y1="250.00002"
+       x2="481.61362"
+       y2="250.00002"
+       gradientUnits="userSpaceOnUse" />
+    <filter
+       style="color-interpolation-filters:sRGB"
+       id="filter29"
+       x="-0.3"
+       y="-0.3"
+       width="1.6"
+       height="1.6">
+      <feGaussianBlur
+         stdDeviation="23.622047"
+         id="feGaussianBlur29" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB"
+       id="filter30"
+       x="-0.011999999"
+       y="-0.012"
+       width="1.024"
+       height="1.024">
+      <feGaussianBlur
+         stdDeviation="2.2618514"
+         id="feGaussianBlur30" />
+    </filter>
+  </defs>
+  <g
+     id="layer1">
+    <ellipse
+       style="opacity:0.5;fill:url(#linearGradient28);stroke:none;stroke-width:1.17165354;stroke-linejoin:round;paint-order:fill markers stroke;fill-opacity:1;filter:url(#filter30);stroke-dasharray:none"
+       id="path1"
+       cx="250"
+       cy="250"
+       rx="226.18515"
+       ry="226.18513" />
+    <circle
+       style="opacity:1;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.659348;stroke-linejoin:round;paint-order:fill markers stroke;stroke-opacity:1;filter:url(#filter29)"
+       id="path20"
+       cx="250"
+       cy="250"
+       r="94.48819" />
+  </g>
+</svg>
