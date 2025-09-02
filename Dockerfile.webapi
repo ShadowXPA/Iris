@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
+
+WORKDIR /src
+
+COPY src/Iris.Core/Iris.Core.csproj ./Iris.Core/Iris.Core.csproj
+COPY src/Iris.WebApi/Iris.WebApi.csproj ./Iris.WebApi/Iris.WebApi.csproj
+
+RUN dotnet restore /src/Iris.WebApi/Iris.WebApi.csproj
+
+COPY src/Iris.Core ./Iris.Core
+COPY src/Iris.WebApi ./Iris.WebApi
+
+WORKDIR /src/Iris.WebApi
+
+RUN dotnet publish -c Release -o /src/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS runtime
+
+WORKDIR /app
+
+COPY --from=builder /src/publish .
+
+EXPOSE 8080
+
+CMD ["dotnet", "Iris.WebApi.dll"]

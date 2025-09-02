@@ -1,0 +1,13 @@
+Dockerfile*
+.dockerignore
+publish
+README.md
+.vscode
+.git
+**/bin/
+**/obj/
+**/out/
+**/.vs
+.dotnet
+node_modules
+npm-debug.log

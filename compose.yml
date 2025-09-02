@@ -1,0 +1,25 @@
+services:
+  iris-web:
+    image: iris-web:latest
+    container_name: iris-web
+    restart: unless-stopped
+    networks:
+      - iris-network
+    environment:
+      - BASE_API_URL=http://iris-webapi:8080
+      - PALETTE_API_URL=/api/palette
+    ports:
+      - "3000:3000"
+
+  iris-webapi:
+    image: iris-webapi:latest
+    container_name: iris-webapi
+    restart: unless-stopped
+    networks:
+      - iris-network
+    # ports:
+    #   - "8080:8080"
+
+networks:
+  iris-network:
+    driver: bridge
