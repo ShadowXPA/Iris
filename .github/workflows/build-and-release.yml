@@ -30,12 +30,12 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish
-        run: dotnet publish src/Iris.Cli -c Release -r ${{ matrix.os }} --self-contained true -p:PublishSingleFile=true -p:DebugType=None -o publish/${{ matrix.os }}
+        run: dotnet publish src/Iris.Cli -c Release -r ${{ matrix.os }} --self-contained true -p:PublishSingleFile=true -p:DebugType=None -o publish/Iris.Cli-${{ matrix.os }}
 
       - name: Zip executables
         run: |
-          cd publish/${{ matrix.os }}
-          zip -r ../../Iris.Cli-${{ matrix.os }}.zip .
+          cd publish
+          zip -r ../Iris.Cli-${{ matrix.os }}.zip Iris.Cli-${{ matrix.os }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -58,12 +58,12 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish
-        run: dotnet publish src/Iris.WebApi -c Release -r ${{ matrix.os }} --self-contained true -p:PublishSingleFile=true -p:DebugType=None -o publish/${{ matrix.os }}
+        run: dotnet publish src/Iris.WebApi -c Release -r ${{ matrix.os }} --self-contained true -p:PublishSingleFile=true -p:DebugType=None -o publish/Iris.WebApi-${{ matrix.os }}
 
       - name: Zip executables
         run: |
-          cd publish/${{ matrix.os }}
-          zip -r ../../Iris.WebApi-${{ matrix.os }}.zip .
+          cd publish
+          zip -r ../Iris.WebApi-${{ matrix.os }}.zip Iris.WebApi-${{ matrix.os }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -96,7 +96,8 @@ jobs:
         run: |
           mkdir -p iris.web
           cp -r src/iris.web/.next/standalone/* iris.web/
-          cp -r src/iris.web/.next/static iris.web/.next/
+          mkdir -p iris.web/.next/static
+          cp -r src/iris.web/.next/static/* iris.web/.next/static/
           cp -r src/iris.web/public iris.web/public || true
           zip -r iris.web.zip iris.web
 
@@ -122,6 +123,10 @@ jobs:
       - name: Extract version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
+      - name: Normalize repo name
+        run: |
+          echo "IMAGE_NAME_WEB_LC=${IMAGE_NAME_WEB,,}" >> $GITHUB_ENV
+
       - name: Build & Push Next.js Docker image
         uses: docker/build-push-action@v5
         with:
@@ -129,8 +134,8 @@ jobs:
           file: Dockerfile.web
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:${{ env.VERSION }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB_LC }}:${{ env.VERSION }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB_LC }}:latest
 
   docker-webapi:
     name: Build & Push Iris.WebApi Container
@@ -148,6 +153,10 @@ jobs:
       - name: Extract version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
+      - name: Normalize repo name
+        run: |
+          echo "IMAGE_NAME_WEBAPI_LC=${IMAGE_NAME_WEBAPI,,}" >> $GITHUB_ENV
+
       - name: Build & Push Iris.WebApi Docker image
         uses: docker/build-push-action@v5
         with:
@@ -155,8 +164,8 @@ jobs:
           file: Dockerfile.webapi
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEBAPI }}:${{ env.VERSION }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEBAPI }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEBAPI_LC }}:${{ env.VERSION }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEBAPI_LC }}:latest
 
   release:
     name: Create GitHub Release
