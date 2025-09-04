@@ -5,6 +5,10 @@ on:
     tags:
       - "v*" # Runs only on version tags, e.g. v1.0.0
 
+permissions:
+  contents: write
+  packages: write
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME_WEB: ${{ github.repository }}-web
