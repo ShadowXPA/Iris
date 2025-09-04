@@ -1,0 +1,172 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*" # Runs only on version tags, e.g. v1.0.0
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_WEB: ${{ github.repository }}-web
+  IMAGE_NAME_WEBAPI: ${{ github.repository }}-webapi
+
+jobs:
+  build-cli:
+    name: Build Iris.Cli Executables
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [win-x64, linux-x64, linux-arm64, linux-musl-x64, linux-musl-arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish
+        run: dotnet publish src/Iris.Cli -c Release -r ${{ matrix.os }} --self-contained true -p:PublishSingleFile=true -p:DebugType=None -o publish/${{ matrix.os }}
+
+      - name: Zip executables
+        run: |
+          cd publish/${{ matrix.os }}
+          zip -r ../../Iris.Cli-${{ matrix.os }}.zip .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Iris.Cli-${{ matrix.os }}
+          path: Iris.Cli-${{ matrix.os }}.zip
+
+  build-webapi:
+    name: Build Iris.WebApi Executables
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [win-x64, linux-x64, linux-arm64, linux-musl-x64, linux-musl-arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish
+        run: dotnet publish src/Iris.WebApi -c Release -r ${{ matrix.os }} --self-contained true -p:PublishSingleFile=true -p:DebugType=None -o publish/${{ matrix.os }}
+
+      - name: Zip executables
+        run: |
+          cd publish/${{ matrix.os }}
+          zip -r ../../Iris.WebApi-${{ matrix.os }}.zip .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Iris.WebApi-${{ matrix.os }}
+          path: Iris.WebApi-${{ matrix.os }}.zip
+
+  build-web:
+    name: Build Iris.Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: |
+          cd src/iris.web
+          npm ci
+
+      - name: Build
+        run: |
+          cd src/iris.web
+          npm run build
+
+      - name: Package standalone build
+        run: |
+          mkdir -p iris.web
+          cp -r src/iris.web/.next/standalone/* iris.web/
+          cp -r src/iris.web/.next/static iris.web/.next/
+          cp -r src/iris.web/public iris.web/public || true
+          zip -r iris.web.zip iris.web
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iris.web
+          path: iris.web.zip
+
+  docker-web:
+    name: Build & Push Iris.Web Container
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Build & Push Next.js Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.web
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:${{ env.VERSION }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEB }}:latest
+
+  docker-webapi:
+    name: Build & Push Iris.WebApi Container
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Build & Push Iris.WebApi Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.webapi
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEBAPI }}:${{ env.VERSION }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WEBAPI }}:latest
+
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-cli, build-web, build-webapi, docker-web, docker-webapi]
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./artifacts/**/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
